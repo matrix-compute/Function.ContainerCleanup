@@ -1,0 +1,3 @@
+{
+    "azdoPat": "@Microsoft.KeyVault(VaultName=pj-rad-use-kv-dev;SecretName=cloudcleanup-azdoPat;SecretVersion=ec8bcf23519549928316419e307edaf5)"
+}
