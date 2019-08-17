@@ -16,7 +16,6 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log, Execut
     log.LogInformation(requestBody);
     var data = (JObject)JsonConvert.DeserializeObject(requestBody);
     log.LogInformation($"PR {data["resource"]["pullRequestId"].ToString()} changed");
-    //["resource"]["repository"]["id"]
 
     var status = data["resource"]["status"].ToString();
     log.LogInformation($"status = {status}");
@@ -47,11 +46,6 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log, Execut
             log.LogInformation($"queuing build for {project}/{sourceBranch}/{buildId}");
             log.LogInformation($"team = {team}");
             log.LogInformation($"project = {project}");
-
-            // ***** use tags to drive config *****
-            // get list of work items for PR
-            // find user story ([fields][System.WorkItemType])
-            // set the variable group region based on the tag found (default = Americas)
 
             var body = $@"{{
                 ""definition"": {{
