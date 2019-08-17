@@ -1,3 +1,3 @@
 {
-    "azdoPat": "@Microsoft.KeyVault(VaultName=pj-rad-use-kv-dev;SecretName=cloudcleanup-azdoPat;SecretVersion=ec8bcf23519549928316419e307edaf5)"
+    "azdoPat": "@Microsoft.KeyVault(VaultName=codepalousa2019;SecretName=azdoPat;SecretVersion=95900dcc3d4c4a21a01ea6ea664b8be7)"
 }
