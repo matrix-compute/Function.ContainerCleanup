@@ -40,14 +40,13 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log, Execut
             var buildId = req.Headers["BuildId"];
             var pat = req.Headers["pat"];
             var sourceBranch = data["resource"]["sourceRefName"].ToString();  // includes refs/heads/
-            //var team = req.Headers["team"];
-            var team = data["resourceContainers"]["project"]["baseUrl"].ToString();
-            team = team.Substring(0, team.IndexOf("."));
-            team = team.Substring(team.LastIndexOf("/")+1);
+            var organization = data["resourceContainers"]["project"]["baseUrl"].ToString();
+            organization = organization.Substring(0, organization.IndexOf("."));
+            organization = organization.Substring(organization.LastIndexOf("/")+1);
             var project = data["resource"]["repository"]["project"]["name"].ToString();
             log.LogInformation($"azdo pat = {pat}");
             log.LogInformation($"queuing build for {project}/{sourceBranch}/{buildId}");
-            log.LogInformation($"team = {team}");
+            log.LogInformation($"organization = {organization}");
             log.LogInformation($"project = {project}");
 
             var body = $@"{{
@@ -61,7 +60,7 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log, Execut
             var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", pat);
 
-            var url = $"https://dev.azure.com/{team}/{project}/_apis/build/builds?api-version=5.0".Replace(" ", "%20");
+            var url = $"https://dev.azure.com/{organization}/{project}/_apis/build/builds?api-version=5.0".Replace(" ", "%20");
             log.LogInformation(url);
             var response = await client.PostAsync(url, new StringContent(body, Encoding.UTF8, "application/json"));
             var content = await response.Content.ReadAsStringAsync();
