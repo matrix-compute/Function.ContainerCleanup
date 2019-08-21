@@ -71,11 +71,6 @@ public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, s
         }},
         {{
             ""op"": ""add"",
-            ""path"": ""/fields/PANDORAIterative.UnplannedWork"",
-            ""value"": ""true""
-        }},
-        {{
-            ""op"": ""add"",
             ""path"": ""/fields/Microsoft.VSTS.Common.Priority"",
             ""value"": ""3""
         }},
@@ -121,8 +116,8 @@ public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, s
     }
     catch (Exception ex)
     {
-        log.LogError($"Error creating bug: {ex.Message}{Environment.NewLine}{Environment.NewLine}Content = {contentString}");
-        return string.Empty;
+        log.LogError($"Error creating bug; Content = {contentString}");
+        throw ex;
     }
 }
 
