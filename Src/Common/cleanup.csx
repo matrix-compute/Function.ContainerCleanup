@@ -80,6 +80,7 @@ public static async Task<IActionResult> Cleanup(HttpRequest req, ILogger log, Ex
             {
                 log.LogInformation("creating bug");
                 var projectId = buildData["definition"]["project"]["id"].ToString();
+                log.LogInformation($"project id = {projectId}");
                 redirect = await AzdoCreateBug(log, client, project, team, buildId, projectId, repositoryId, sourceBranch, containerName);
             }            
         }
