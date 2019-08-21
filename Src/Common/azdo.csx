@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, string project, string team, string buildId, string projectId,
     string repositoryId, string sourceBranch, string containerName, string org)
 {
-    log.LogInformation($"creating bug for {sourceBranch}");
+    log.LogInformation($"creating bug for branch '{sourceBranch}'");
 
     // find current iteration
     var iterationUrl = $"https://dev.azure.com/{org}/{project}/{team}/_apis/work/teamsettings/iterations?$timeframe=current&api-version=5.0";
@@ -109,12 +109,21 @@ public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, s
     ]";
     log.LogInformation(body);
 
-    var response = await client.PostAsync($"https://dev.azure.com/{org}/{project}/_apis/wit/workitems/$Bug?api-version=5.0",
-        new StringContent(body, Encoding.UTF8, "application/json-patch+json"));
-    var content = (JObject)JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
-    log.LogInformation($"Bug {content["id"].ToString()} created");
-
-    return content["_links"]["html"]["href"].ToString();
+    var url = $"https://dev.azure.com/{org}/{project}/_apis/wit/workitems/$Bug?api-version=5.0";
+    log.LogInformation($"post url = {url}");
+    var response = await client.PostAsync(url, new StringContent(body, Encoding.UTF8, "application/json-patch+json"));
+    var contentString = await response.Content.ReadAsStringAsync();
+    try
+    {
+        var content = (JObject)JsonConvert.DeserializeObject(contentString);
+        log.LogInformation($"Bug {content["id"].ToString()} created");
+        return content["_links"]["html"]["href"].ToString();
+    }
+    catch (Exception ex)
+    {
+        log.LogError($"Error creating bug: {ex.Message}{Environment.NewLine}{Environment.NewLine}Content = {contentString}");
+        return string.Empty;
+    }
 }
 
 public static async Task AzdoCreatePullRequest(ILogger log, HttpClient client, string project, string repositoryId, string sourceBranch,
