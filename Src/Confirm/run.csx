@@ -24,6 +24,7 @@ public static IActionResult Run(HttpRequest req, ILogger log)
     string team = GetParameter(req, log, "team");
     string callbackUrl = GetParameter(req, log, "callbackUrl");  // should include the function auth code as a query string parameter
     string pat = GetParameter(req, log, "pat");
+    string org = GetParameter(req, log, "org");
 
     if (container == null || image == null)
     {
@@ -31,7 +32,7 @@ public static IActionResult Run(HttpRequest req, ILogger log)
     }
     else
     {       
-        callbackUrl = $"{callbackUrl}&container={container}&image={image}&buildId={buildId}&passed={passedQa}&acrRegistry={acrRegistry}&acrRepository={acrRepository}&acrAuth={acrAuth}&aciResourceGroup={aciResourceGroup}&project={project}&targetBranch={targetBranch}&team={team}&pat={pat}"
+        callbackUrl = $"{callbackUrl}&container={container}&image={image}&buildId={buildId}&passed={passedQa}&acrRegistry={acrRegistry}&acrRepository={acrRepository}&acrAuth={acrAuth}&aciResourceGroup={aciResourceGroup}&project={project}&targetBranch={targetBranch}&team={team}&pat={pat}&org={org}"
             .Replace(" ", "%20");
         log.LogInformation($"callback url: {callbackUrl}");
         
