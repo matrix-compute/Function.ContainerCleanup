@@ -33,6 +33,7 @@ public static async Task<IActionResult> Cleanup(HttpRequest req, ILogger log, Ex
     string targetBranch = GetParameter(req, log, "targetBranch");
     string team = GetParameter(req, log, "team");
     string pat = GetParameter(req, log, "pat");
+    string organization = GetParameter(req, log, "organization");
 
     if (containerName == null || imageId == null)
     {
@@ -43,21 +44,18 @@ public static async Task<IActionResult> Cleanup(HttpRequest req, ILogger log, Ex
         var error = false;
         var redirect = string.Empty;
 
-        var config = new ConfigurationBuilder()
-            .SetBasePath(executionContext.FunctionAppDirectory)
-            .AddEnvironmentVariables()
-            .Build();
-
         try
         {
             var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", pat);
 
-            var build = await client.GetAsync($"https://dev.azure.com/pandora-jewelry/{project}/_apis/build/builds/{buildId}?api-version=5.0");
+            var build = await client.GetAsync($"https://dev.azure.com/{organization}/{project}/_apis/build/builds/{buildId}?api-version=5.0");
             var buildData = (JObject)JsonConvert.DeserializeObject(await build.Content.ReadAsStringAsync());
             var repositoryId = buildData["repository"]["id"].ToString();
+            log.LogInformation($"repository id = {repositoryId}");
             var sourceBranch = buildData["sourceBranch"].ToString();  // includes "refs/heads/"
             sourceBranch = sourceBranch.Substring(sourceBranch.LastIndexOf("/")+1);
+            log.LogInformation($"source branch = {sourceBranch}");
 
             if (passedQa)
             {
