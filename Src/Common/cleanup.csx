@@ -32,6 +32,7 @@ public static async Task<IActionResult> Cleanup(HttpRequest req, ILogger log, Ex
     string project = GetParameter(req, log, "project");
     string targetBranch = GetParameter(req, log, "targetBranch");
     string team = GetParameter(req, log, "team");
+    string pat = GetParameter(req, log, "pat");
 
     if (containerName == null || imageId == null)
     {
@@ -50,9 +51,6 @@ public static async Task<IActionResult> Cleanup(HttpRequest req, ILogger log, Ex
         try
         {
             var client = new HttpClient();
-
-            var pat = config["azdoPat"];  // TODO: use service account to generate pat
-            log.LogInformation($"azdo pat = {pat}");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", pat);
 
             var build = await client.GetAsync($"https://dev.azure.com/pandora-jewelry/{project}/_apis/build/builds/{buildId}?api-version=5.0");
