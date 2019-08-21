@@ -33,7 +33,7 @@ public static async Task<IActionResult> Cleanup(HttpRequest req, ILogger log, Ex
     string targetBranch = GetParameter(req, log, "targetBranch");
     string team = GetParameter(req, log, "team");
     string pat = GetParameter(req, log, "pat");
-    string organization = GetParameter(req, log, "organization");
+    string org = GetParameter(req, log, "org");
 
     if (containerName == null || imageId == null)
     {
@@ -49,7 +49,9 @@ public static async Task<IActionResult> Cleanup(HttpRequest req, ILogger log, Ex
             var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", pat);
 
-            var build = await client.GetAsync($"https://dev.azure.com/{organization}/{project}/_apis/build/builds/{buildId}?api-version=5.0");
+            var url = $"https://dev.azure.com/{org}/{project}/_apis/build/builds/{buildId}?api-version=5.0";
+            log.LogInformation($"url = {url}");
+            var build = await client.GetAsync(url);
             var buildData = (JObject)JsonConvert.DeserializeObject(await build.Content.ReadAsStringAsync());
             var repositoryId = buildData["repository"]["id"].ToString();
             log.LogInformation($"repository id = {repositoryId}");
