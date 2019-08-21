@@ -9,15 +9,22 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, string project, string team, string buildId, string projectId, string repositoryId, string sourceBranch, string containerName, string org)
+public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, string project, string team, string buildId, string projectId,
+    string repositoryId, string sourceBranch, string containerName, string org)
 {
+    log.LogInformation($"creating bug for {sourceBranch}");
+
     // find current iteration
-    var result = await client.GetAsync($"https://dev.azure.com/{org}/{project}/{team}/_apis/work/teamsettings/iterations?$timeframe=current&api-version=5.0");
+    var iterationUrl = $"https://dev.azure.com/{org}/{project}/{team}/_apis/work/teamsettings/iterations?$timeframe=current&api-version=5.0";
+    log.LogInformation($"iteration url = {iterationUrl}");
+    var result = await client.GetAsync(iterationUrl);
     var data = (JArray)((JObject)JsonConvert.DeserializeObject(await result.Content.ReadAsStringAsync()))["value"];
     string currentIteration = (data.First()["path"]).ToString().Replace(@"\", @"\\");  // have to escape the backslash
     log.LogInformation($"current iteration for {team.Replace("%20", " ")} = {currentIteration}");
 
-    var workitems = await client.GetAsync($"https://dev.azure.com/{org}/{project}/_apis/build/builds/{buildId}/workitems?api-version=5.0");
+    var workItemsUrl = $"https://dev.azure.com/{org}/{project}/_apis/build/builds/{buildId}/workitems?api-version=5.0";
+    log.LogInformation($"work items url = {workItemsUrl}");
+    var workitems = await client.GetAsync(workItemsUrl);
     var workitemsData = (JArray)((JObject)JsonConvert.DeserializeObject(await workitems.Content.ReadAsStringAsync()))["value"];
     var workitemLinks = workitemsData.Select(x => x["id"]);
     log.LogInformation($"{workitemLinks.Count()} work item links found");
@@ -25,7 +32,9 @@ public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, s
     var wi = new StringBuilder();
     foreach (var id in workitemLinks)
     {
-        var workitem = await client.GetAsync($"https://dev.azure.com/{org}/{project}/_apis/wit/workitems?ids={id}&api-version=5.0");
+        var workItemUrl = $"https://dev.azure.com/{org}/{project}/_apis/wit/workitems?ids={id}&api-version=5.0";
+        log.LogInformation($"work item url = {workItemUrl}");
+        var workitem = await client.GetAsync(workItemUrl);
         var workitemData = ((JArray)((JObject)JsonConvert.DeserializeObject(await workitem.Content.ReadAsStringAsync()))["value"]).First();
         if (workitemData["fields"]["System.State"].ToString() == "Closed")
         {
@@ -108,7 +117,8 @@ public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, s
     return content["_links"]["html"]["href"].ToString();
 }
 
-public static async Task AzdoCreatePullRequest(ILogger log, HttpClient client, string project, string repositoryId, string sourceBranch, string targetBranch, string org)
+public static async Task AzdoCreatePullRequest(ILogger log, HttpClient client, string project, string repositoryId, string sourceBranch,
+    string targetBranch, string org)
 {
     log.LogInformation($"creating PR for {sourceBranch} to {targetBranch}");
 
@@ -125,7 +135,8 @@ public static async Task AzdoCreatePullRequest(ILogger log, HttpClient client, s
     log.LogInformation($"Pull request {content["pullRequestId"].ToString()} created");
 }
 
-public static async Task AzdoCompletePullRequest(ILogger log, HttpClient client, string project, string repositoryId, string sourceBranch, string targetBranch, string org)
+public static async Task AzdoCompletePullRequest(ILogger log, HttpClient client, string project, string repositoryId, string sourceBranch,
+    string targetBranch, string org)
 {
     var pr = await GetActivePR(log, client, project, sourceBranch, org);
     if (string.IsNullOrEmpty(pr))
@@ -147,8 +158,9 @@ public static async Task AzdoCompletePullRequest(ILogger log, HttpClient client,
         }}";
         //"targetUrl": "http://fabrikam-fiber-inc.com/CI/builds/1"
         log.LogInformation(body);
-        var response = await client.PostAsync($"https://dev.azure.com/{org}/_apis/git/repositories/{repositoryId}/pullRequests/{pr}/statuses?api-version=5.0-preview.1",
-            new StringContent(body, Encoding.UTF8, "application/json"));
+        var url = $"https://dev.azure.com/{org}/_apis/git/repositories/{repositoryId}/pullRequests/{pr}/statuses?api-version=5.0-preview.1";
+        log.LogInformation($"url = {url}");
+        var response = await client.PostAsync(url, new StringContent(body, Encoding.UTF8, "application/json"));
         var content = (JObject)JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
         log.LogInformation($"Pull request {pr}: qa/passed status set to succeeded");
     }
