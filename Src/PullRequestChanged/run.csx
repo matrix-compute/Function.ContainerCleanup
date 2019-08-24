@@ -37,23 +37,32 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log, Execut
         if (reviewComplete)
         {
             // queue up build for this branch...
-            var buildId = req.Headers["BuildId"];
             var pat = req.Headers["pat"];
-            var sourceBranch = data["resource"]["sourceRefName"].ToString();  // includes refs/heads/
+            log.LogInformation($"azdo pat = {pat}");
+
+            var buildAgent = req.Headers["BuildAgent"];
+            log.LogInformation($"build agent = {buildAgent}");
+
             var organization = data["resourceContainers"]["project"]["baseUrl"].ToString();
             organization = organization.Substring(0, organization.IndexOf("."));
             organization = organization.Substring(organization.LastIndexOf("/")+1);
-            var project = data["resource"]["repository"]["project"]["name"].ToString();
-            log.LogInformation($"azdo pat = {pat}");
-            log.LogInformation($"queuing build for {project}/{sourceBranch}/{buildId}");
             log.LogInformation($"organization = {organization}");
+
+            var project = data["resource"]["repository"]["project"]["name"].ToString();
             log.LogInformation($"project = {project}");
+            
+            var sourceBranch = data["resource"]["sourceRefName"].ToString();  // includes refs/heads/
+            var buildId = req.Headers["BuildId"];
+            log.LogInformation($"queuing build for {project}/{sourceBranch}/{buildId}");
 
             var body = $@"{{
                 ""definition"": {{
                     ""id"": ""{buildId}""
                 }},
-                ""sourceBranch"": ""{sourceBranch}""
+                ""sourceBranch"": ""{sourceBranch}"",
+                ""agentSpecification"": {{
+                    ""identifier"": ""{buildAgent}""
+                }}
             }}";
             log.LogInformation(body);
 
