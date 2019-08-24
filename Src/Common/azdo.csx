@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, string project, string team, string buildId, string projectId,
-    string repositoryId, string sourceBranch, string containerName, string org)
+public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, string project, string team,
+    string buildId, string projectId, string repositoryId, string sourceBranch, string containerName, string org)
 {
     log.LogInformation($"creating bug for branch '{sourceBranch}'");
 
@@ -121,26 +121,8 @@ public static async Task<string> AzdoCreateBug(ILogger log, HttpClient client, s
     }
 }
 
-public static async Task AzdoCreatePullRequest(ILogger log, HttpClient client, string project, string repositoryId, string sourceBranch,
-    string targetBranch, string org)
-{
-    log.LogInformation($"creating PR for {sourceBranch} to {targetBranch}");
-
-    var body = $@"{{
-        ""sourceRefName"": ""refs/heads/{sourceBranch}"",
-        ""targetRefName"": ""refs/heads/{targetBranch}"",
-        ""title"": ""QA passed"",
-        ""description"": ""Created automagically""
-    }}";
-    log.LogInformation(body);
-    var response = await client.PostAsync($"https://dev.azure.com/{org}/{project}/_apis/git/repositories/{repositoryId}/pullrequests?api-version=5.0",
-        new StringContent(body, Encoding.UTF8, "application/json"));
-    var content = (JObject)JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
-    log.LogInformation($"Pull request {content["pullRequestId"].ToString()} created");
-}
-
-public static async Task AzdoCompletePullRequest(ILogger log, HttpClient client, string project, string repositoryId, string sourceBranch,
-    string targetBranch, string org)
+public static async Task AzdoCompletePullRequest(ILogger log, HttpClient client, string project,
+    string repositoryId, string sourceBranch, string targetBranch, string org)
 {
     var pr = await GetActivePR(log, client, project, sourceBranch, org);
     if (string.IsNullOrEmpty(pr))
@@ -151,7 +133,7 @@ public static async Task AzdoCompletePullRequest(ILogger log, HttpClient client,
     {
         log.LogInformation($"completing PR {pr} ({sourceBranch} to {targetBranch})");
 
-        // set 'succeeded' status
+        // set 'succeeded' status (NOTE: this has to match the name that is defined in AzDO)
         var body = $@"{{
             ""state"": ""succeeded"",
             ""description"": ""QA testing passed"",
@@ -160,7 +142,7 @@ public static async Task AzdoCompletePullRequest(ILogger log, HttpClient client,
                 ""genre"": ""qa""
             }}
         }}";
-        //"targetUrl": "http://fabrikam-fiber-inc.com/CI/builds/1"
+        
         log.LogInformation(body);
         var url = $"https://dev.azure.com/{org}/_apis/git/repositories/{repositoryId}/pullRequests/{pr}/statuses?api-version=5.0-preview.1";
         log.LogInformation($"url = {url}");
