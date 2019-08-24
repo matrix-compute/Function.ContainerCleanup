@@ -5,8 +5,8 @@ using Microsoft.Azure.Management.Fluent;
 
 public static bool DeleteAciInstance(ILogger log, string functionAppDirectory, string resourceGroup, string containerName)
 {
-    // for ACI delete using Azure Management classes & container name
-    string authFilePath = $@"{functionAppDirectory}\Common\my.azureauth";
+    // for ACI delete using Azure Management classes & container name (no REST API available)
+    var authFilePath = $@"{functionAppDirectory}\Common\my.azureauth";
     try
     {
         //to generate credentials file: "az ad sp create-for-rbac --sdk-auth > my.azureauth"
