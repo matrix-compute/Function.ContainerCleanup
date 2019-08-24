@@ -333,3 +333,5 @@ ASALocalRun/
 /.vscode
 
 local.settings.json
+
+Src/Common/my.azureauth
