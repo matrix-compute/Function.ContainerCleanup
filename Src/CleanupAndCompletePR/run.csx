@@ -85,7 +85,4 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log, Execut
     {
         return new OkObjectResult($"Deleted container {containerName} and image {imageId}");
     }
-
-
-    //return await Cleanup(req, log, executionContext, true);
 }
