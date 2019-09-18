@@ -90,4 +90,4 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log, Execut
     }
 
     return new OkObjectResult("Done!");
-}
+} 
