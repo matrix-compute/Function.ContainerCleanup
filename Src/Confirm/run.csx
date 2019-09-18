@@ -4,27 +4,25 @@ using System;
 using System.Net;
 using System.Text;
 using System.Web;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc;  // IActionResult
 
 public static IActionResult Run(HttpRequest req, ILogger log)
 {
-    string title = GetParameter(req, log, "title");
-    string container = GetParameter(req, log, "container");
-    string image = GetParameter(req, log, "image");
-    string buildId = GetParameter(req, log, "buildId");
-    bool passedQa = bool.Parse(GetParameter(req, log, "passed"));
-    string acrRegistry = GetParameter(req, log, "acrRegistry");
-    string acrRepository = GetParameter(req, log, "acrRepository");
-    string acrAuth = GetParameter(req, log, "acrAuth");
-    string aciResourceGroup = GetParameter(req, log, "aciResourceGroup");
-    string project = GetParameter(req, log, "project");
-    string targetBranch = GetParameter(req, log, "targetBranch");
-    string team = GetParameter(req, log, "team");
-    string callbackUrl = GetParameter(req, log, "callbackUrl");  // should include the function auth code as a query string parameter
-    string pat = GetParameter(req, log, "pat");
-    string org = GetParameter(req, log, "org");
+    string title = GetParameter(req, log, "title") ?? "title";
+    string container = GetParameter(req, log, "container") ?? "container";
+    string image = GetParameter(req, log, "image") ?? "image";
+    string buildId = GetParameter(req, log, "buildId") ?? "buildId";
+    bool passedQa = bool.Parse(GetParameter(req, log, "passed") ?? "false");
+    string acrRegistry = GetParameter(req, log, "acrRegistry") ?? "acrRegistry";
+    string acrRepository = GetParameter(req, log, "acrRepository") ?? "acrRepository";
+    string acrAuth = GetParameter(req, log, "acrAuth") ?? "acrAuth";
+    string aciResourceGroup = GetParameter(req, log, "aciResourceGroup") ?? "aciResourceGroup";
+    string project = GetParameter(req, log, "project") ?? "project";
+    string targetBranch = GetParameter(req, log, "targetBranch") ?? "targetBranch";
+    string team = GetParameter(req, log, "team") ?? "team";
+    string callbackUrl = GetParameter(req, log, "callbackUrl") ?? "callback url";  // should include the function auth code as a query string parameter
+    string pat = GetParameter(req, log, "pat") ?? "pat";
+    string org = GetParameter(req, log, "org") ?? "org";
     
     callbackUrl = $"{callbackUrl}&container={container}&image={image}&buildId={buildId}&passed={passedQa}&acrRegistry={acrRegistry}&acrRepository={acrRepository}&acrAuth={acrAuth}&aciResourceGroup={aciResourceGroup}&project={project}&targetBranch={targetBranch}&team={team}&pat={pat}&org={org}"
         .Replace(" ", "%20");
@@ -52,6 +50,7 @@ public static IActionResult Run(HttpRequest req, ILogger log)
     html.Append("<input type=\"submit\" value=\"DO IT!!!\" /></body></form></html>");
 
     log.LogInformation("done");
+    
     // this is essentially a confirmation dialog presented as a web page
     return new ContentResult { Content = html.ToString(), ContentType = "text/html" };
 }
